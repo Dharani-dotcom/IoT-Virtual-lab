@@ -1,164 +1,251 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import time
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+from io import BytesIO
 
 st.set_page_config(page_title="Virtual IoT Sensor Lab", layout="wide")
 
 # -----------------------
-# Custom CSS
+# PDF generator
 # -----------------------
-st.markdown("""
-<style>
+def generate_pdf(title, aim, theory, result):
 
-.main-title{
-font-size:45px;
-font-weight:bold;
-text-align:center;
-background: linear-gradient(90deg,#00C9FF,#92FE9D);
--webkit-background-clip:text;
-color:transparent;
-}
+    buffer = BytesIO()
+    styles = getSampleStyleSheet()
 
-.card{
-padding:20px;
-border-radius:15px;
-background-color:#f5f7fa;
-box-shadow:0px 4px 20px rgba(0,0,0,0.1);
-}
+    elements = []
 
-</style>
-""", unsafe_allow_html=True)
+    elements.append(Paragraph(f"<b>{title}</b>", styles['Title']))
+    elements.append(Spacer(1,20))
 
-st.markdown('<p class="main-title">🌐 Virtual IoT Sensor Laboratory</p>', unsafe_allow_html=True)
+    elements.append(Paragraph(f"<b>Aim:</b> {aim}", styles['Normal']))
+    elements.append(Spacer(1,10))
+
+    elements.append(Paragraph(f"<b>Theory:</b> {theory}", styles['Normal']))
+    elements.append(Spacer(1,10))
+
+    elements.append(Paragraph(f"<b>Result:</b> {result}", styles['Normal']))
+
+    pdf = SimpleDocTemplate(buffer)
+    pdf.build(elements)
+
+    buffer.seek(0)
+
+    return buffer
 
 # -----------------------
+# Title
+# -----------------------
+
+st.title("🌐 Virtual IoT Sensor Laboratory")
+
 # Sidebar
-# -----------------------
-st.sidebar.title("🧪 Experiments")
-
-lab = st.sidebar.radio(
-"Select Sensor",
+lab = st.sidebar.selectbox(
+"Select Experiment",
 [
 "Temperature Sensor",
 "Soil Moisture Sensor",
-"Humidity Sensor",
-"Gas Sensor",
-"Light Sensor",
-"Motion Sensor"
+"Humidity Sensor"
 ]
 )
 
 # -----------------------
 # Temperature Sensor
 # -----------------------
+
 if lab == "Temperature Sensor":
 
-    st.header("🌡 Temperature Monitoring")
+    aim = "To study temperature monitoring using IoT sensors."
 
-    col1,col2 = st.columns(2)
+    theory = """
+Temperature sensors measure environmental heat and convert it into electrical signals.
+In IoT systems these sensors help monitor weather, industrial machines,
+and smart homes.
+"""
 
-    with col1:
-        temp = st.slider("Temperature (°C)",-10,50,25)
+    st.header("🌡 Temperature Sensor Experiment")
 
-        if temp > 35:
-            st.error("🔥 High Temperature")
-        elif temp < 10:
-            st.warning("❄ Cold Environment")
+    st.subheader("Aim")
+    st.write(aim)
+
+    st.subheader("Theory")
+    st.write(theory)
+
+    temp = st.slider("Temperature (°C)",-10,50,25)
+
+    if temp > 35:
+        result = "High Temperature Detected"
+        st.error(result)
+    elif temp < 10:
+        result = "Low Temperature Detected"
+        st.warning(result)
+    else:
+        result = "Normal Temperature"
+        st.success(result)
+
+    data = np.random.randn(20).cumsum() + temp
+    st.line_chart(data)
+
+    # Quiz
+    st.subheader("Quiz")
+
+    q1 = st.radio(
+    "Which sensor is commonly used for temperature monitoring?",
+    ["LDR","DHT11","MQ2"]
+    )
+
+    if st.button("Submit Quiz"):
+
+        if q1 == "DHT11":
+            st.success("Correct Answer ✅")
         else:
-            st.success("Normal Temperature")
+            st.error("Wrong Answer ❌")
 
-    with col2:
+    # PDF Download
 
-        data = np.random.randn(20).cumsum() + temp
-        st.line_chart(data)
+    pdf = generate_pdf(
+        "Temperature Sensor Experiment",
+        aim,
+        theory,
+        result
+    )
+
+    st.download_button(
+        label="📄 Download Experiment Report",
+        data=pdf,
+        file_name="temperature_lab_report.pdf",
+        mime="application/pdf"
+    )
 
 # -----------------------
 # Soil Moisture
 # -----------------------
+
 elif lab == "Soil Moisture Sensor":
 
-    st.header("🌱 Smart Irrigation Sensor")
+    aim = "To study soil moisture monitoring in smart agriculture."
 
-    col1,col2 = st.columns(2)
+    theory = """
+Soil moisture sensors measure water content in soil.
+They are widely used in IoT based irrigation systems
+to automate watering for crops.
+"""
 
-    with col1:
+    st.header("🌱 Soil Moisture Sensor")
 
-        moisture = st.slider("Soil Moisture (%)",0,100,40)
+    st.subheader("Aim")
+    st.write(aim)
 
-        if moisture < 30:
-            st.error("💧 Irrigation Needed")
+    st.subheader("Theory")
+    st.write(theory)
+
+    moisture = st.slider("Moisture (%)",0,100,40)
+
+    if moisture < 30:
+        result = "Irrigation Required"
+        st.error(result)
+    else:
+        result = "Moisture Level Normal"
+        st.success(result)
+
+    data = np.random.randn(20).cumsum() + moisture
+    st.area_chart(data)
+
+    # Quiz
+
+    st.subheader("Quiz")
+
+    q1 = st.radio(
+    "Which field mainly uses soil moisture sensors?",
+    ["Agriculture","Networking","Robotics"]
+    )
+
+    if st.button("Submit Quiz"):
+
+        if q1 == "Agriculture":
+            st.success("Correct Answer ✅")
         else:
-            st.success("Soil Moisture OK")
+            st.error("Wrong Answer ❌")
 
-    with col2:
+    pdf = generate_pdf(
+        "Soil Moisture Sensor Experiment",
+        aim,
+        theory,
+        result
+    )
 
-        data = np.random.randn(20).cumsum() + moisture
-        st.area_chart(data)
+    st.download_button(
+        label="📄 Download Experiment Report",
+        data=pdf,
+        file_name="soil_moisture_lab_report.pdf",
+        mime="application/pdf"
+    )
 
 # -----------------------
-# Humidity
+# Humidity Sensor
 # -----------------------
+
 elif lab == "Humidity Sensor":
 
-    st.header("💧 Humidity Monitoring")
+    aim = "To understand humidity monitoring using IoT sensors."
+
+    theory = """
+Humidity sensors measure moisture present in air.
+These sensors are widely used in weather monitoring
+and smart homes.
+"""
+
+    st.header("💧 Humidity Sensor")
+
+    st.subheader("Aim")
+    st.write(aim)
+
+    st.subheader("Theory")
+    st.write(theory)
 
     humidity = st.slider("Humidity (%)",0,100,50)
 
     if humidity > 80:
-        st.warning("High Humidity")
+        result = "High Humidity"
+        st.warning(result)
     elif humidity < 30:
-        st.warning("Low Humidity")
+        result = "Low Humidity"
+        st.warning(result)
     else:
-        st.success("Comfort Level")
+        result = "Comfort Level"
+        st.success(result)
 
     data = np.random.randn(20).cumsum() + humidity
     st.line_chart(data)
 
-# -----------------------
-# Gas Sensor
-# -----------------------
-elif lab == "Gas Sensor":
+    # Quiz
 
-    st.header("🧪 Gas Leak Detection")
+    st.subheader("Quiz")
 
-    gas = st.slider("Gas Level (ppm)",0,1000,100)
+    q1 = st.radio(
+    "Humidity sensors measure:",
+    ["Air moisture","Light intensity","Sound"]
+    )
 
-    if gas > 400:
-        st.error("⚠ Gas Leak Detected")
-    else:
-        st.success("Safe Air")
+    if st.button("Submit Quiz"):
 
-    data = np.random.randn(20).cumsum() + gas
-    st.line_chart(data)
+        if q1 == "Air moisture":
+            st.success("Correct Answer ✅")
+        else:
+            st.error("Wrong Answer ❌")
 
-# -----------------------
-# Light Sensor
-# -----------------------
-elif lab == "Light Sensor":
+    pdf = generate_pdf(
+        "Humidity Sensor Experiment",
+        aim,
+        theory,
+        result
+    )
 
-    st.header("💡 Smart Light Sensor")
-
-    light = st.slider("Light Intensity",0,100,60)
-
-    if light < 30:
-        st.info("Street Lights ON")
-    else:
-        st.info("Street Lights OFF")
-
-    data = np.random.randn(20).cumsum() + light
-    st.line_chart(data)
-
-# -----------------------
-# Motion Sensor
-# -----------------------
-elif lab == "Motion Sensor":
-
-    st.header("🚶 Motion Detection System")
-
-    motion = st.selectbox("Motion Detected?",["No","Yes"])
-
-    if motion == "Yes":
-        st.warning("🚨 Motion Detected")
-    else:
-        st.success("Area Secure")
+    st.download_button(
+        label="📄 Download Experiment Report",
+        data=pdf,
+        file_name="humidity_lab_report.pdf",
+        mime="application/pdf"
+    )
