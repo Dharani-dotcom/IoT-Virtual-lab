@@ -7,7 +7,7 @@ from io import BytesIO
 st.set_page_config(page_title="Virtual IoT Sensor Lab", layout="wide")
 
 # -----------------------
-# PDF generator (UPDATED)
+# PDF generator
 # -----------------------
 def generate_pdf(title, aim, materials, theory, procedure, observation, result, conclusion, applications):
 
@@ -15,8 +15,8 @@ def generate_pdf(title, aim, materials, theory, procedure, observation, result, 
     styles = getSampleStyleSheet()
     elements = []
 
-    def section(title, content):
-        elements.append(Paragraph(f"<b>{title}</b>", styles['Heading2']))
+    def add_section(heading, content):
+        elements.append(Paragraph(f"<b>{heading}</b>", styles['Heading2']))
         elements.append(Spacer(1, 10))
         elements.append(Paragraph(content, styles['Normal']))
         elements.append(Spacer(1, 15))
@@ -26,14 +26,14 @@ def generate_pdf(title, aim, materials, theory, procedure, observation, result, 
     elements.append(Spacer(1, 20))
 
     # Sections
-    section("Aim", aim)
-    section("Materials Required", materials)
-    section("Theory", theory)
-    section("Procedure", procedure)
-    section("Observation", observation)
-    section("Result", result)
-    section("Conclusion", conclusion)
-    section("Applications", applications)
+    add_section("Aim", aim)
+    add_section("Materials Required", materials)
+    add_section("Theory", theory)
+    add_section("Procedure", procedure)
+    add_section("Observation", observation)
+    add_section("Result", result)
+    add_section("Conclusion", conclusion)
+    add_section("Applications", applications)
 
     pdf = SimpleDocTemplate(buffer)
     pdf.build(elements)
@@ -42,9 +42,8 @@ def generate_pdf(title, aim, materials, theory, procedure, observation, result, 
     return buffer
 
 # -----------------------
-# Title
+# App Title
 # -----------------------
-
 st.title("🌐 Virtual IoT Sensor Laboratory")
 
 lab = st.sidebar.selectbox(
@@ -52,26 +51,26 @@ lab = st.sidebar.selectbox(
     ["Temperature Sensor", "Soil Moisture Sensor", "Humidity Sensor"]
 )
 
-# -----------------------
-# Temperature Sensor
-# -----------------------
-
+# =======================
+# TEMPERATURE SENSOR
+# =======================
 if lab == "Temperature Sensor":
+
+    st.header("🌡 Temperature Sensor Experiment")
 
     aim = "To study temperature monitoring using IoT sensors."
 
-    materials = "DHT11 Sensor, Arduino/NodeMCU, Jumper wires, Breadboard, Power supply, Computer"
+    materials = """DHT11 Sensor, Arduino/NodeMCU, Jumper wires,
+Breadboard, Power supply, Computer"""
 
     theory = """Temperature sensors measure heat and convert it into electrical signals.
 Used in IoT for weather monitoring, smart homes, and industries."""
 
-    procedure = """1. Connect sensor to microcontroller.
-2. Power the system.
-3. Read temperature values.
-4. Display in app.
-5. Observe using slider."""
-
-    st.header("🌡 Temperature Sensor")
+    procedure = """1. Connect sensor to microcontroller
+2. Power the system
+3. Read temperature values
+4. Display in app
+5. Observe changes"""
 
     temp = st.slider("Temperature (°C)", -10, 50, 25)
 
@@ -85,11 +84,11 @@ Used in IoT for weather monitoring, smart homes, and industries."""
         result = "Normal Temperature"
         st.success(result)
 
-    observation = "Temperature varies and is displayed as a graph."
+    observation = "Temperature values vary and are plotted in graph."
 
-    conclusion = "IoT temperature monitoring is effective for real-time applications."
+    conclusion = "IoT temperature monitoring enables real-time tracking."
 
-    applications = "Weather systems, Smart homes, Industry"
+    applications = "Weather monitoring, Smart homes, Industrial systems"
 
     data = np.random.randn(20).cumsum() + temp
     st.line_chart(data)
@@ -100,27 +99,27 @@ Used in IoT for weather monitoring, smart homes, and industries."""
         observation, result, conclusion, applications
     )
 
-    st.download_button("📄 Download Report", pdf, "temperature.pdf")
+    st.download_button("📄 Download Report", pdf, "temperature_report.pdf")
 
-# -----------------------
-# Soil Moisture Sensor
-# -----------------------
-
+# =======================
+# SOIL MOISTURE SENSOR
+# =======================
 elif lab == "Soil Moisture Sensor":
+
+    st.header("🌱 Soil Moisture Sensor Experiment")
 
     aim = "To study soil moisture monitoring using IoT."
 
-    materials = "Soil Moisture Sensor, Arduino, Wires, Breadboard, Power supply"
+    materials = """Soil Moisture Sensor, Arduino/NodeMCU,
+Jumper wires, Breadboard, Power supply"""
 
-    theory = """Measures water content in soil.
+    theory = """Soil moisture sensors measure water content in soil.
 Used in smart irrigation systems."""
 
-    procedure = """1. Insert sensor into soil.
-2. Connect to controller.
-3. Power system.
-4. Monitor readings."""
-
-    st.header("🌱 Soil Moisture Sensor")
+    procedure = """1. Insert sensor into soil
+2. Connect to microcontroller
+3. Power system
+4. Read moisture values"""
 
     moisture = st.slider("Moisture (%)", 0, 100, 40)
 
@@ -128,14 +127,14 @@ Used in smart irrigation systems."""
         result = "Irrigation Required"
         st.error(result)
     else:
-        result = "Moisture Normal"
+        result = "Moisture Level Normal"
         st.success(result)
 
-    observation = "Moisture level changes based on input."
+    observation = "Moisture level changes and is shown in chart."
 
-    conclusion = "Helps automate irrigation efficiently."
+    conclusion = "Useful for automatic irrigation control."
 
-    applications = "Agriculture, Smart irrigation"
+    applications = "Agriculture, Smart irrigation systems"
 
     data = np.random.randn(20).cumsum() + moisture
     st.area_chart(data)
@@ -146,27 +145,27 @@ Used in smart irrigation systems."""
         observation, result, conclusion, applications
     )
 
-    st.download_button("📄 Download Report", pdf, "soil.pdf")
+    st.download_button("📄 Download Report", pdf, "soil_moisture_report.pdf")
 
-# -----------------------
-# Humidity Sensor
-# -----------------------
-
+# =======================
+# HUMIDITY SENSOR
+# =======================
 elif lab == "Humidity Sensor":
 
-    aim = "To study humidity monitoring using IoT."
+    st.header("💧 Humidity Sensor Experiment")
 
-    materials = "DHT11 Sensor, Microcontroller, Wires, Breadboard"
+    aim = "To study humidity monitoring using IoT sensors."
+
+    materials = """DHT11/DHT22 Sensor, Microcontroller,
+Jumper wires, Breadboard, Power supply"""
 
     theory = """Humidity sensors measure moisture in air.
-Used in weather and smart systems."""
+Used in weather stations and smart systems."""
 
-    procedure = """1. Connect sensor.
-2. Power system.
-3. Read humidity.
-4. Display values."""
-
-    st.header("💧 Humidity Sensor")
+    procedure = """1. Connect sensor
+2. Power system
+3. Read humidity values
+4. Display in app"""
 
     humidity = st.slider("Humidity (%)", 0, 100, 50)
 
@@ -180,11 +179,11 @@ Used in weather and smart systems."""
         result = "Comfort Level"
         st.success(result)
 
-    observation = "Humidity varies with environment."
+    observation = "Humidity varies and is visualized in graph."
 
-    conclusion = "Useful for environmental monitoring."
+    conclusion = "Helps maintain environmental comfort."
 
-    applications = "Weather stations, Homes, Industry"
+    applications = "Weather stations, Smart homes, Industries"
 
     data = np.random.randn(20).cumsum() + humidity
     st.line_chart(data)
@@ -195,4 +194,4 @@ Used in weather and smart systems."""
         observation, result, conclusion, applications
     )
 
-    st.download_button("📄 Download Report", pdf, "humidity.pdf")
+    st.download_button("📄 Download Report", pdf, "humidity_report.pdf")
