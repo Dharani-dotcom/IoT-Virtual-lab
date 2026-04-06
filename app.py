@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
@@ -8,31 +7,38 @@ from io import BytesIO
 st.set_page_config(page_title="Virtual IoT Sensor Lab", layout="wide")
 
 # -----------------------
-# PDF generator
+# PDF generator (UPDATED)
 # -----------------------
-def generate_pdf(title, aim, theory, result):
+def generate_pdf(title, aim, materials, theory, procedure, observation, result, conclusion, applications):
 
     buffer = BytesIO()
     styles = getSampleStyleSheet()
-
     elements = []
 
+    def section(title, content):
+        elements.append(Paragraph(f"<b>{title}</b>", styles['Heading2']))
+        elements.append(Spacer(1, 10))
+        elements.append(Paragraph(content, styles['Normal']))
+        elements.append(Spacer(1, 15))
+
+    # Title
     elements.append(Paragraph(f"<b>{title}</b>", styles['Title']))
-    elements.append(Spacer(1,20))
+    elements.append(Spacer(1, 20))
 
-    elements.append(Paragraph(f"<b>Aim:</b> {aim}", styles['Normal']))
-    elements.append(Spacer(1,10))
-
-    elements.append(Paragraph(f"<b>Theory:</b> {theory}", styles['Normal']))
-    elements.append(Spacer(1,10))
-
-    elements.append(Paragraph(f"<b>Result:</b> {result}", styles['Normal']))
+    # Sections
+    section("Aim", aim)
+    section("Materials Required", materials)
+    section("Theory", theory)
+    section("Procedure", procedure)
+    section("Observation", observation)
+    section("Result", result)
+    section("Conclusion", conclusion)
+    section("Applications", applications)
 
     pdf = SimpleDocTemplate(buffer)
     pdf.build(elements)
 
     buffer.seek(0)
-
     return buffer
 
 # -----------------------
@@ -41,14 +47,9 @@ def generate_pdf(title, aim, theory, result):
 
 st.title("🌐 Virtual IoT Sensor Laboratory")
 
-# Sidebar
 lab = st.sidebar.selectbox(
-"Select Experiment",
-[
-"Temperature Sensor",
-"Soil Moisture Sensor",
-"Humidity Sensor"
-]
+    "Select Experiment",
+    ["Temperature Sensor", "Soil Moisture Sensor", "Humidity Sensor"]
 )
 
 # -----------------------
@@ -59,21 +60,20 @@ if lab == "Temperature Sensor":
 
     aim = "To study temperature monitoring using IoT sensors."
 
-    theory = """
-Temperature sensors measure environmental heat and convert it into electrical signals.
-In IoT systems these sensors help monitor weather, industrial machines,
-and smart homes.
-"""
+    materials = "DHT11 Sensor, Arduino/NodeMCU, Jumper wires, Breadboard, Power supply, Computer"
 
-    st.header("🌡 Temperature Sensor Experiment")
+    theory = """Temperature sensors measure heat and convert it into electrical signals.
+Used in IoT for weather monitoring, smart homes, and industries."""
 
-    st.subheader("Aim")
-    st.write(aim)
+    procedure = """1. Connect sensor to microcontroller.
+2. Power the system.
+3. Read temperature values.
+4. Display in app.
+5. Observe using slider."""
 
-    st.subheader("Theory")
-    st.write(theory)
+    st.header("🌡 Temperature Sensor")
 
-    temp = st.slider("Temperature (°C)",-10,50,25)
+    temp = st.slider("Temperature (°C)", -10, 50, 25)
 
     if temp > 35:
         result = "High Temperature Detected"
@@ -85,103 +85,68 @@ and smart homes.
         result = "Normal Temperature"
         st.success(result)
 
+    observation = "Temperature varies and is displayed as a graph."
+
+    conclusion = "IoT temperature monitoring is effective for real-time applications."
+
+    applications = "Weather systems, Smart homes, Industry"
+
     data = np.random.randn(20).cumsum() + temp
     st.line_chart(data)
 
-    # Quiz
-    st.subheader("Quiz")
-
-    q1 = st.radio(
-    "Which sensor is commonly used for temperature monitoring?",
-    ["LDR","DHT11","MQ2"]
-    )
-
-    if st.button("Submit Quiz"):
-
-        if q1 == "DHT11":
-            st.success("Correct Answer ✅")
-        else:
-            st.error("Wrong Answer ❌")
-
-    # PDF Download
-
     pdf = generate_pdf(
         "Temperature Sensor Experiment",
-        aim,
-        theory,
-        result
+        aim, materials, theory, procedure,
+        observation, result, conclusion, applications
     )
 
-    st.download_button(
-        label="📄 Download Experiment Report",
-        data=pdf,
-        file_name="temperature_lab_report.pdf",
-        mime="application/pdf"
-    )
+    st.download_button("📄 Download Report", pdf, "temperature.pdf")
 
 # -----------------------
-# Soil Moisture
+# Soil Moisture Sensor
 # -----------------------
 
 elif lab == "Soil Moisture Sensor":
 
-    aim = "To study soil moisture monitoring in smart agriculture."
+    aim = "To study soil moisture monitoring using IoT."
 
-    theory = """
-Soil moisture sensors measure water content in soil.
-They are widely used in IoT based irrigation systems
-to automate watering for crops.
-"""
+    materials = "Soil Moisture Sensor, Arduino, Wires, Breadboard, Power supply"
+
+    theory = """Measures water content in soil.
+Used in smart irrigation systems."""
+
+    procedure = """1. Insert sensor into soil.
+2. Connect to controller.
+3. Power system.
+4. Monitor readings."""
 
     st.header("🌱 Soil Moisture Sensor")
 
-    st.subheader("Aim")
-    st.write(aim)
-
-    st.subheader("Theory")
-    st.write(theory)
-
-    moisture = st.slider("Moisture (%)",0,100,40)
+    moisture = st.slider("Moisture (%)", 0, 100, 40)
 
     if moisture < 30:
         result = "Irrigation Required"
         st.error(result)
     else:
-        result = "Moisture Level Normal"
+        result = "Moisture Normal"
         st.success(result)
+
+    observation = "Moisture level changes based on input."
+
+    conclusion = "Helps automate irrigation efficiently."
+
+    applications = "Agriculture, Smart irrigation"
 
     data = np.random.randn(20).cumsum() + moisture
     st.area_chart(data)
 
-    # Quiz
-
-    st.subheader("Quiz")
-
-    q1 = st.radio(
-    "Which field mainly uses soil moisture sensors?",
-    ["Agriculture","Networking","Robotics"]
-    )
-
-    if st.button("Submit Quiz"):
-
-        if q1 == "Agriculture":
-            st.success("Correct Answer ✅")
-        else:
-            st.error("Wrong Answer ❌")
-
     pdf = generate_pdf(
         "Soil Moisture Sensor Experiment",
-        aim,
-        theory,
-        result
+        aim, materials, theory, procedure,
+        observation, result, conclusion, applications
     )
 
-    st.download_button(
-        label="📄 Download Experiment Report",
-        data=pdf,
-        file_name="soil_moisture_lab_report.pdf",
-        mime="application/pdf"
-    )
+    st.download_button("📄 Download Report", pdf, "soil.pdf")
 
 # -----------------------
 # Humidity Sensor
@@ -189,23 +154,21 @@ to automate watering for crops.
 
 elif lab == "Humidity Sensor":
 
-    aim = "To understand humidity monitoring using IoT sensors."
+    aim = "To study humidity monitoring using IoT."
 
-    theory = """
-Humidity sensors measure moisture present in air.
-These sensors are widely used in weather monitoring
-and smart homes.
-"""
+    materials = "DHT11 Sensor, Microcontroller, Wires, Breadboard"
+
+    theory = """Humidity sensors measure moisture in air.
+Used in weather and smart systems."""
+
+    procedure = """1. Connect sensor.
+2. Power system.
+3. Read humidity.
+4. Display values."""
 
     st.header("💧 Humidity Sensor")
 
-    st.subheader("Aim")
-    st.write(aim)
-
-    st.subheader("Theory")
-    st.write(theory)
-
-    humidity = st.slider("Humidity (%)",0,100,50)
+    humidity = st.slider("Humidity (%)", 0, 100, 50)
 
     if humidity > 80:
         result = "High Humidity"
@@ -217,35 +180,19 @@ and smart homes.
         result = "Comfort Level"
         st.success(result)
 
+    observation = "Humidity varies with environment."
+
+    conclusion = "Useful for environmental monitoring."
+
+    applications = "Weather stations, Homes, Industry"
+
     data = np.random.randn(20).cumsum() + humidity
     st.line_chart(data)
 
-    # Quiz
-
-    st.subheader("Quiz")
-
-    q1 = st.radio(
-    "Humidity sensors measure:",
-    ["Air moisture","Light intensity","Sound"]
-    )
-
-    if st.button("Submit Quiz"):
-
-        if q1 == "Air moisture":
-            st.success("Correct Answer ✅")
-        else:
-            st.error("Wrong Answer ❌")
-
     pdf = generate_pdf(
         "Humidity Sensor Experiment",
-        aim,
-        theory,
-        result
+        aim, materials, theory, procedure,
+        observation, result, conclusion, applications
     )
 
-    st.download_button(
-        label="📄 Download Experiment Report",
-        data=pdf,
-        file_name="humidity_lab_report.pdf",
-        mime="application/pdf"
-    )
+    st.download_button("📄 Download Report", pdf, "humidity.pdf")
